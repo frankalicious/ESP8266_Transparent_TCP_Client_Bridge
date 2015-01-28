@@ -14,9 +14,15 @@
 #define recvTaskPrio        0
 #define recvTaskQueueLen    64
 
+
 os_event_t recvTaskQueue[recvTaskQueueLen];
 
 static struct espconn *pconn = NULL;
+
+LOCAL os_timer_t network_timer;
+static os_timer_t led_timer;
+
+uint8_t ledon = 0;
 
 static void ICACHE_FLASH_ATTR networkConnectedCb(void *arg);
 static void ICACHE_FLASH_ATTR networkDisconCb(void *arg);
@@ -25,11 +31,9 @@ static void ICACHE_FLASH_ATTR networkRecvCb(void *arg, char *data, unsigned shor
 static void ICACHE_FLASH_ATTR networkSentCb(void *arg);
 void ICACHE_FLASH_ATTR network_init();
 
-LOCAL os_timer_t network_timer;
-static os_timer_t led_timer;
-uint8_t ledon = 0;
 
 
+//Read from UART0(requires special uart.c!)
 static void ICACHE_FLASH_ATTR recvTask(os_event_t *events)
 {
 	uint8_t c, i;
@@ -58,7 +62,7 @@ static void ICACHE_FLASH_ATTR recvTask(os_event_t *events)
 	}
 	ETS_UART_INTR_ENABLE();
 	
-	
+	// send to Server if available
 	if (pconn && i != 0) 
 	{
 	  espconn_sent(pconn, ch, i);
@@ -66,8 +70,7 @@ static void ICACHE_FLASH_ATTR recvTask(os_event_t *events)
 }
 
 //Timer event.
-static void ICACHE_FLASH_ATTR 
-LedTimer(void *arg)
+static void ICACHE_FLASH_ATTR LedTimer(void *arg)
 {
 
     //Do blinky stuff
@@ -181,9 +184,10 @@ void ICACHE_FLASH_ATTR network_init() {
 }
 
 //Init function 
-void ICACHE_FLASH_ATTR user_init() {
+void ICACHE_FLASH_ATTR user_init() 
+{
 
-     char ssid[32] = SSID;
+    char ssid[32] = SSID;
     char password[64] = SSID_PASSWORD;
     
     struct station_config stationConf;
@@ -196,18 +200,34 @@ void ICACHE_FLASH_ATTR user_init() {
     os_memcpy(&stationConf.password, password, 64);
     
     wifi_station_set_config(&stationConf);
-
-    
+ 
     uart_init(BIT_RATE_57600,BIT_RATE_57600);
 
     //uart0_tx_buffer("init",4);
- 
  
     //Set GPIO2 to output mode
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
                
     //Set GPIO2 low
     gpio_output_set(0, BIT2, BIT2, 0);
+
+
+    //Set GPIO0 to output mode
+    PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
+                   
+    //Set GPIO0 low
+    gpio_output_set(0, BIT0, BIT0, 0);
+  
+    //uart0_tx_buffer("1wait...",8);
+    os_delay_us(500000); //500ms = 0,5sec! 
+    //uart0_tx_buffer("...ok!..",8);
+        
+    //Set GPIO0 high
+    gpio_output_set(BIT0, 0, BIT0, 0);
+    
+    //uart0_tx_buffer("2wait...",8);
+    os_delay_us(1000000); //1000ms = 1sec! 
+    //uart0_tx_buffer("...ok!..",7);
 
 	  //Timer LED
 	  os_timer_disarm(&led_timer);
@@ -217,7 +237,6 @@ void ICACHE_FLASH_ATTR user_init() {
     os_event_t *queue = os_malloc(sizeof(os_event_t) * recvTaskQueueLen);
     
     system_os_task(recvTask, recvTaskPrio, queue, recvTaskQueueLen);
-    
-     
+        
     network_init();  
 }
