@@ -211,7 +211,6 @@ void ICACHE_FLASH_ATTR user_init()
     //Set GPIO2 low
     gpio_output_set(0, BIT2, BIT2, 0);
 
-
     //Set GPIO0 to output mode
     PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO0_U, FUNC_GPIO0);
                    
@@ -219,14 +218,14 @@ void ICACHE_FLASH_ATTR user_init()
     gpio_output_set(0, BIT0, BIT0, 0);
   
     //uart0_tx_buffer("1wait...",8);
-    os_delay_us(500000); //500ms = 0,5sec! 
+    os_delay_us(250000); //250ms = 0,25sec! 
     //uart0_tx_buffer("...ok!..",8);
         
     //Set GPIO0 high
     gpio_output_set(BIT0, 0, BIT0, 0);
     
     //uart0_tx_buffer("2wait...",8);
-    os_delay_us(1000000); //1000ms = 1sec! 
+    os_delay_us(250000); //250ms = 0,25sec!
     //uart0_tx_buffer("...ok!..",7);
 
 	  //Timer LED
