@@ -14,6 +14,8 @@ extern os_timer_t led_timer;
 
 struct espconn *pconn = NULL;
 
+#define DEBUG_OUTPUT 0
+
 void ICACHE_FLASH_ATTR networkServerFoundCb(const char *name, ip_addr_t *ip, void *arg) 
 {
 
@@ -21,32 +23,42 @@ void ICACHE_FLASH_ATTR networkServerFoundCb(const char *name, ip_addr_t *ip, voi
 
 void ICACHE_FLASH_ATTR networkSentCb(void *arg) 
 {
-  //uart0_tx_buffer("sent",4);
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("sent",4);
+#endif
 }
 
 void ICACHE_FLASH_ATTR networkRecvCb(void *arg, char *data, unsigned short len) 
 {
-  //uart0_tx_buffer("recv",4);
   
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("recv",4);
+#endif
   struct espconn *conn=(struct espconn *)arg;
   uart0_tx_buffer(data,len);
 }
 
 void ICACHE_FLASH_ATTR networkConnectedCb(void *arg) 
 {
-  //uart0_tx_buffer("conn",4);
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("conn",4);
+#endif
   struct espconn *conn=(struct espconn *)arg;
 }
 
 void ICACHE_FLASH_ATTR networkReconCb(void *arg, sint8 err) 
 {
-  //uart0_tx_buffer("rcon",4);
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("rcon",4);
+#endif
   network_init();
 }
 
 void ICACHE_FLASH_ATTR networkDisconCb(void *arg) 
 {
-  //uart0_tx_buffer("dcon",4);
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("dcon",4);
+#endif
 }
 
 
@@ -58,18 +70,22 @@ void ICACHE_FLASH_ATTR network_start()
     
   pconn = &conn;
   
-  //uart0_tx_buffer("look",4);
   
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("look",4);
+#endif
   conn.type=ESPCONN_TCP;
   conn.state=ESPCONN_NONE;
   conn.proto.tcp=&tcp;
   conn.proto.tcp->local_port=espconn_port();
   conn.proto.tcp->remote_port=SERVERPORT;
 
-  //char page_buffer[20];
-  //os_sprintf(page_buffer,"IP: %d.%d.%d.%d",IP2STR(&target));
-  //uart0_tx_buffer(page_buffer,strlen(page_buffer));
   
+#if DEBUG_OUTPUT
+  char page_buffer[20];
+  os_sprintf(page_buffer,"IP: %d.%d.%d.%d",IP2STR(&target));
+  uart0_tx_buffer(page_buffer,strlen(page_buffer));
+#endif
   os_memcpy(conn.proto.tcp->remote_ip, &target, 4);
   espconn_regist_connectcb(&conn, networkConnectedCb);
   espconn_regist_disconcb(&conn, networkDisconCb);
@@ -78,8 +94,10 @@ void ICACHE_FLASH_ATTR network_start()
   espconn_regist_sentcb(&conn, networkSentCb);
   int  iRet = espconn_connect(&conn);  
 
-  //os_sprintf(page_buffer,"\nConected =0: %d\n\n",iRet);
-  //uart0_tx_buffer(page_buffer,strlen(page_buffer)); 
+#if DEBUG_OUTPUT
+  os_sprintf(page_buffer,"\nConnected =0: %d\n\n",iRet);
+  uart0_tx_buffer(page_buffer,strlen(page_buffer));
+#endif
 }
 
 void ICACHE_FLASH_ATTR network_check_ip(void) 
@@ -93,23 +111,27 @@ void ICACHE_FLASH_ATTR network_check_ip(void)
   if (wifi_station_get_connect_status() == STATION_GOT_IP && ipconfig.ip.addr != 0) 
   {
    
-    //char page_buffer[20];
-    //os_sprintf(page_buffer,"IP: %d.%d.%d.%d",IP2STR(&ipconfig.ip));
-    //uart0_tx_buffer(page_buffer,strlen(page_buffer));
     
  	  os_timer_disarm(&led_timer);
 	  os_timer_setfn(&led_timer, (os_timer_func_t *)LedTimer, NULL);
 	  os_timer_arm(&led_timer, 500, 1);
+#if DEBUG_OUTPUT
+    char page_buffer[20];
+    os_sprintf(page_buffer,"IP: %d.%d.%d.%d",IP2STR(&ipconfig.ip));
+    uart0_tx_buffer(page_buffer,strlen(page_buffer));
+#endif
     
     network_start();
   } 
   else 
   {
- 	  //uart0_tx_buffer("!!NOIP!!",8); 
  	  
  	  os_timer_disarm(&led_timer);
 	  os_timer_setfn(&led_timer, (os_timer_func_t *)LedTimer, NULL);
 	  os_timer_arm(&led_timer, 2000, 1);
+#if DEBUG_OUTPUT
+    uart0_tx_buffer("!!NOIP!!",8); 
+#endif
 
     os_timer_setfn(&network_timer, (os_timer_func_t *)network_check_ip, NULL);
     os_timer_arm(&network_timer, 1000, 0);
@@ -118,8 +140,10 @@ void ICACHE_FLASH_ATTR network_check_ip(void)
 
 void ICACHE_FLASH_ATTR network_init() 
 {
-  //uart0_tx_buffer("net init",8);
   
+#if DEBUG_OUTPUT
+  uart0_tx_buffer("net init",8);
+#endif
   os_timer_disarm(&network_timer);
   os_timer_setfn(&network_timer, (os_timer_func_t *)network_check_ip, NULL);
   os_timer_arm(&network_timer, 1000, 0);
