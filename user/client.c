@@ -112,26 +112,26 @@ void ICACHE_FLASH_ATTR network_check_ip(void)
   {
    
     
- 	  os_timer_disarm(&led_timer);
-	  os_timer_setfn(&led_timer, (os_timer_func_t *)LedTimer, NULL);
-	  os_timer_arm(&led_timer, 500, 1);
 #if DEBUG_OUTPUT
     char page_buffer[20];
     os_sprintf(page_buffer,"IP: %d.%d.%d.%d",IP2STR(&ipconfig.ip));
     uart0_tx_buffer(page_buffer,strlen(page_buffer));
 #endif
+    os_timer_disarm(&led_timer);
+    os_timer_setfn(&led_timer, (os_timer_func_t *)LedTimer, NULL);
+    os_timer_arm(&led_timer, 500, 1);
     
     network_start();
   } 
   else 
   {
  	  
- 	  os_timer_disarm(&led_timer);
-	  os_timer_setfn(&led_timer, (os_timer_func_t *)LedTimer, NULL);
-	  os_timer_arm(&led_timer, 2000, 1);
 #if DEBUG_OUTPUT
     uart0_tx_buffer("!!NOIP!!",8); 
 #endif
+    os_timer_disarm(&led_timer);
+    os_timer_setfn(&led_timer, (os_timer_func_t *)LedTimer, NULL);
+    os_timer_arm(&led_timer, 2000, 1);
 
     os_timer_setfn(&network_timer, (os_timer_func_t *)network_check_ip, NULL);
     os_timer_arm(&network_timer, 1000, 0);
