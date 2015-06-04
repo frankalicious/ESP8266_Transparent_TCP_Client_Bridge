@@ -109,11 +109,11 @@ all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
 
 $(FW_FILE_1): $(TARGET_OUT)
 	$(vecho) "FW $@"
-	$(Q) $(FW_TOOL) -eo $(TARGET_OUT) $(FW_FILE_1_ARGS)
+	$(ESPTOOL) elf2image $< -o $(FW_BASE)/
 
 $(FW_FILE_2): $(TARGET_OUT)
 	$(vecho) "FW $@"
-	$(Q) $(FW_TOOL) -eo $(TARGET_OUT) $(FW_FILE_2_ARGS)
+	$(ESPTOOL) elf2image $< -o $(FW_BASE)/
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
