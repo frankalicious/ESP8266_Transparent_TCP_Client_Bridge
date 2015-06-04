@@ -59,6 +59,7 @@ void ICACHE_FLASH_ATTR networkDisconCb(void *arg)
 #if DEBUG_OUTPUT
   uart0_tx_buffer("dcon",4);
 #endif
+  network_init();
 }
 
 
