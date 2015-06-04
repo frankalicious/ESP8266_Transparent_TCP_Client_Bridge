@@ -16,10 +16,13 @@ struct espconn *pconn = NULL;
 
 #define DEBUG_OUTPUT 0
 
+//unused
+#if 0
 void ICACHE_FLASH_ATTR networkServerFoundCb(const char *name, ip_addr_t *ip, void *arg) 
 {
 
 }
+#endif
 
 void ICACHE_FLASH_ATTR networkSentCb(void *arg) 
 {
